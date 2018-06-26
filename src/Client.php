@@ -17,9 +17,12 @@ use Psr\Log\NullLogger;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webfoersterei\HetznerCloudApiClient\Exception\ApiException;
 use Webfoersterei\HetznerCloudApiClient\Exception\ErrorResponseException;
+use Webfoersterei\HetznerCloudApiClient\Model\Action\Action;
 use Webfoersterei\HetznerCloudApiClient\Model\Action\GetAllResponse;
 use Webfoersterei\HetznerCloudApiClient\Model\Action\GetResponse;
 use Webfoersterei\HetznerCloudApiClient\Model\ErrorResponse;
+use Webfoersterei\HetznerCloudApiClient\Model\FloatingIp\AssignRequest;
+use Webfoersterei\HetznerCloudApiClient\Model\FloatingIp\FloatingIp;
 use Webfoersterei\HetznerCloudApiClient\Model\Pricing\GetResponse as GetPriceResponse;
 use Webfoersterei\HetznerCloudApiClient\Model\Server\ChangeNameResponse;
 use Webfoersterei\HetznerCloudApiClient\Model\Server\CreateRequest;
@@ -325,5 +328,27 @@ class Client implements ClientInterface
 
         return $getResponse;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function assignFloatingIp(FloatingIp $ip, AssignRequest $assignRequest): Action
+    {
+        $requestBody = $this->serializer->serialize($assignRequest, static::FORMAT);
+
+        $request = new Request('POST', sprintf("floating_ips/%d/actions/assign", $ip->id), ['Content-Type' => 'application/json'], $requestBody);
+        $this->logger->debug('Sending API-Request to assign floating IP to a server', ['body' => $request->getBody()]);
+        $httpResponse = $this->processRequest($request);
+
+        $this->logger->debug('Response for assign floating IP request', ['body' => $httpResponse->getBody()]);
+
+        /** @var Action $assignResponse */
+        $assignResponse = $this->serializer->deserialize($httpResponse->getBody(), Action::class,
+            static::FORMAT);
+
+        return $assignResponse;
+    }
+
+
 
 }
