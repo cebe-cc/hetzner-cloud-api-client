@@ -269,4 +269,5 @@ class ClientTest extends TestCase
         $this->assertEquals($expectedServerAllResponse, $actualServerAllResponse);
     }
 
+    // TODO test for floating IPs
 }

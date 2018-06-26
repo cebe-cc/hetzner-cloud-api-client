@@ -29,6 +29,7 @@ use Webfoersterei\HetznerCloudApiClient\Model\Server\GetAllResponse as GetAllSer
 use Webfoersterei\HetznerCloudApiClient\Model\Server\GetAllTypesResponse;
 use Webfoersterei\HetznerCloudApiClient\Model\Server\GetResponse as GetServerResponse;
 use Webfoersterei\HetznerCloudApiClient\Model\Server\GetTypeResponse;
+use Webfoersterei\HetznerCloudApiClient\Model\FloatingIp\GetAllResponse as GetAllFloatingIpsResponse;
 
 class Client implements ClientInterface
 {
@@ -286,4 +287,43 @@ class Client implements ClientInterface
 
         return $getResponse;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFloatingIps(): GetAllFloatingIpsResponse
+    {
+        $this->logger->debug('Sending API-Request to get all floating ips');
+
+        $request = new Request('GET', 'floating_ips');
+        $httpResponse = $this->processRequest($request);
+
+        $this->logger->debug('Response for all floating ips request', ['body' => $httpResponse->getBody()]);
+
+        /** @var GetAllFloatingIpsResponse $getResponse */
+        $getResponse = $this->serializer->deserialize($httpResponse->getBody(), GetAllFloatingIpsResponse::class,
+            static::FORMAT);
+
+        return $getResponse;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFloatingIp(int $id): GetServerResponse
+    {
+        $this->logger->debug('Sending API-Request to get a single server', ['server_id' => $id]);
+
+        $request = new Request('GET', sprintf('servers/%d', $id));
+        $httpResponse = $this->processRequest($request);
+
+        $this->logger->debug('Response for single server request', ['body' => $httpResponse->getBody()]);
+
+        /** @var GetServerResponse $getResponse */
+        $getResponse = $this->serializer->deserialize($httpResponse->getBody(), GetServerResponse::class,
+            static::FORMAT);
+
+        return $getResponse;
+    }
+
 }
